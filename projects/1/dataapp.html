@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #form {
+            background-color: #99ff99;
+            border:60px solid black ;
+            width: 90%;
+            height: 400px;
+            font-size: 100%;
+            font-family: Impact;
+        }
+        
+        div {
+            background-color: #ff99ff;
+            border: 30px solid black;
+            border-radius: 2px;
+            min-height: 250px;
+            padding-top: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+            padding-left: 0px;
+            text-align: center;
+            height: 250px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        h1{ font-size: 160%;
+            font-family:Arial
+        }
+        h2{ font-size: 160%;
+        font-family:Arial;
+        }
+        p{ font-size: 160%;
+        font-family:Arial;
+        }
+        
+    </style>
+
+    <div id="form">
+        <p>
+         
+        
+        <FORM METHOD="LINK" ACTION="https://preview.c9users.io/cps42217921/webdev1617/app.html?_c9_id=livepreview1&_c9_host=https://ide.c9.io">
+        <INPUT TYPE="submit" VALUE="Reset">
+        <button data-cloud9-id='11' type="button" id="btnSearch" >Search</button>
+<select id="select">
+    <option id="ASSAULT">ASSAULT</option>
+    <option id="BATTERY">BATTERY</option>
+    <option id="NARCOTICS">NARCOTICS</option>
+    <option id="PROSTITUTION">PROSTITUTION</option>
+    <option id="ROBBERY">ROBBERY</option>
+    <option id="THEFT">THEFT</option>
+</select>
+<select id="select">
+    <option id="001">1</option>
+    <option id="002">2</option>
+    <option id="003">3</option>
+    <option id="004">4</option>
+    <option id="005">5</option>
+    <option id="006">6</option>
+    <option id="007">7</option>
+    <option id="008">8</option>
+    <option id="009">9</option>
+    <option id="010">10</option>
+    <option id="011">11</option>
+    <option id="012">12</option>
+    <option id="013">13</option>
+    <option id="014">14</option>
+    <option id="015">15</option>
+    <option id="016">16</option>
+    <option id="017">17</option>
+    <option id="018">18</option>
+    <option id="019">19</option>
+    <option id="020">20</option>
+    <option id="021">21</option>
+    <option id="022">22</option>
+    <option id="023">23</option>
+    <option id="24">24</option>
+    <option id="25">25</option>
+</select>
+<h2>Districts</h2>
+<img src="http://chronicle.uchicago.edu/991104/map.gif" alt="Places" style="width:400px;height:300px;">
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+        var crime;
+
+        var baseURL = 'https://data.cityofchicago.org/resource/6zsd-86xi.json';
+
+        var filters ='?primary_type=';
+
+
+        var url = baseURL + filters;
+
+        console.log(url)
+
+        $(
+
+            $("#btnSearch").on("click", function() {
+                $("#results").html("");
+
+                        var searchTerm = $("#select").val()
+                        
+                        var urlWithParams = url + searchTerm;
+                 var filters2 = '&district=';
+                 var url2 = urlWithParams + filters2
+                 $("results2").html("");
+                 var searchTerm2 = $("#district").val()
+                 var urlWithParams2 = url2 + searchTerm2
+                 console.log(urlWithParams2)
+                console.log(urlWithParams); 
+                $.getJSON(urlWithParams)
+                    .done(function(data) {
+                        console.log(data);
+                        $.each(data,
+                            function(index, value) {
+                                var html =
+                                    "<div class=" +
+                                    "<br> Case Number: " +
+                                    value.case_number +
+                                    "</br>" +
+                                    "<br>Case Type:" + 
+                                    value.primary_type +
+                                    "</br>" + 
+                                    "<br> Description: " + 
+                                    value.description +
+                                    "</br>" +
+                                    "<br>Block of the crime: " +
+                                    value.block +
+                                    "</br>" +
+                                    "<br>Date of the crime: " +
+                                    value.date +
+                                    "</br>" +
+                                    "<br> District: " +
+                                    value.district +
+                                    "</br>"
+                                    
+                                    
+                                    "</div>";
+                                $("body").append(html)
+
+                            })
+                    })
+            })
+        )
+    </script>
+
+</html>
+
+

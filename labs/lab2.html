@@ -1,10 +1,34 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>"Lab 2: Reynoso, Jorge" </title>
-    </head>
-    <body>
-        <h1>"Lab 2: Reynoso, Jorge"</h1>
-        <p>Hello World</p>
-    </body>
-</html>
+
+<script>
+        var url = "https://data.cityofchicago.org/resource/rp42-fxjt.json";
+        
+        $.ajax({
+          url: url,
+          method: 'GET',
+          data: { color: "BLK" , make: "FORD"}
+        }).done(function(data) {
+          
+          var clone;
+          
+          $.each(data, function (i,v) {
+            
+            clone = $("#towedVehicle").clone();
+
+            
+            clone.removeClass("template");
+
+            clone.attr("id", v.plate);
+            
+            clone.find(".plate").text(v.plate)
+            clone.find(".color").text(v.color);
+
+           /*  more clone statements here to fill the template  */
+
+            $("#results").append(clone);
+          })
+
+        }).fail(function(err) {
+          throw err;
+        });
+        
+      </script>

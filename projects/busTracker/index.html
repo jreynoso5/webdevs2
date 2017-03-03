@@ -1,0 +1,81 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery.parseXML demo</title>
+  <style>
+    div.class {
+      background-color:#0C7; 
+      border: 1px solid black; 
+      border-radius: 10px;
+      min-height:100px;
+      padding:20px;
+      
+    }
+  </style>
+  <script  src="https://code.jquery.com/jquery-1.10.2.js"></script>
+</head>
+     <div id="form" class="class">
+        <select id="txt" type="text">
+                  <option value="152">152 Addison</option>
+                  <option value="49">49 Western</option>
+                  
+                </select>
+              <button type="button" id="btnSearch">Choose Route</button>
+      </div>
+      <div id="results" class="class"></div>
+<body>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+      <script>
+        $(function() {
+          
+          
+          var apiPassThruUrl = "https://polar-garden-75406.herokuapp.com/apiPassThru.php";
+          
+          var apiEndpoint = "http://ctabustracker.com/bustime/api/v2/getpredictions";
+          
+          
+          $("#btnSearch").on("click", function(){
+            $("#results").html("")        
+          
+            $.ajax({
+              url: apiPassThruUrl,
+              dataType: "json",
+              method: 'GET',
+              data: { "apiEndpoint": apiEndpoint,
+                      "key" : "FiLpUFr72VutfAaDwzDuJfqmR",
+                      "stpid" : "12525,12569,8417,8195",
+                      "rt" : $("#txt").val(),
+                      "format":"json"}
+            
+            }).done (function (data) {
+              console.log(data);
+              //$("#form").append("<h1>Bus Routes</h1>");
+             
+              $.each(data["bustime-response"]["prd"], function(i,v) {
+                  $("#results").append("Time: " + v.prdctdn + " min " 
+                  + "<br>" 
+                  + "Route #: "
+                  + v.rt 
+                  + "<br>"
+                  + "Direction of Travel: "
+                  + v.rtdir
+                  + "<br>"
+                  + "Stop: "
+                  + v.stpnm
+                  + "<br>"
+                  + "Vehicle ID: "
+                  + v.vid
+                  + "<hr>");
+                
+              })
+            });
+        });
+        });
+  
+</script>
+ 
+</body>
+</html><script src="/_static/preview/livecss.js"></script>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Canvas Art</title>
+        <style>
+            canvas {
+              border:1px solid #d3d3d3;background-color:white;
+            }
+            #puppy {display: none;}
+        </style>
+    </head>
+    <body>
+        <canvas id="myCanvas" width="400" height="400">
+        Your browser does not support the canvas element.
+        </canvas>
+
+        
+        <script>
+            //create a reference to the canvas element
+            var canvas = document.getElementById("myCanvas");
+            
+            //create a reference to the drawing object
+            var ctx = canvas.getContext("2d");
+            
+            var circleX = 0;
+            var direction = 1;
+           
+            function draw() {
+                
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                ctx.beginPath();
+                ctx.arc(circleX, 200, 50, 0, 2 * Math.PI);
+                ctx.arc(200,350,40,0,2*Math.PI);
+                ctx.arc(200,50,40,0,2*Math.PI);
+                ctx.fill();
+
+                if (circleX >= (canvas.width - 10)) {
+                    direction = -3;
+                } 
+                else if (circleX <= 10){
+                    direction = 3;
+                }
+                
+                
+                
+                circleX = circleX + direction;
+                
+                
+                
+                window.requestAnimationFrame(draw);
+            }
+            
+            window.requestAnimationFrame(draw);
+            
+            canvas.addEventListener("click", 
+            
+              function (e) {
+        
+                
+                var circleColor = '#'+Math.floor(Math.random()*16777215).toString(16);
+
+                console.log(circleColor);
+              	
+              	ctx.fillStyle = circleColor;
+              	
+              }
+            
+            );
+          
+            canvas.addEventListener("mousemove", 
+            
+	            function (e) {
+  	
+                var circleColor = '#'+ Math.floor(Math.random()*16777215).toString(16);
+                
+                ctx.fillStyle = circleColor;
+             	
+
+}
+            
+            );
+        </script>
+    </body>
+</html>

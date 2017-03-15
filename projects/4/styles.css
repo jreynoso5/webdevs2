@@ -183,6 +183,10 @@ body .demo-blog {
 .demo-blog .coffee-pic .mdl-card__media {
   background-image: url('images/coffee.jpg');
 }
+
+.demo-blog .hello-pic .mdl-card__media {
+  background-image: url('images/hello.jpg');
+}
 .demo-blog .something-else .mdl-card__media {
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -222,6 +226,10 @@ body .demo-blog {
 }
 .demo-blog .on-the-road-again .mdl-card__media {
   background-image: url('images/road.jpg');
+
+}
+.demo-blog .on-the-hello-again .mdl-card__media {
+  background-image: url('images/hello.jpg');
 }
 .demo-blog .shopping .mdl-card__media {
   background-image: url('images/shopping.jpg');

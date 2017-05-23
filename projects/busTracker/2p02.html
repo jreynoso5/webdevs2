@@ -1,0 +1,323 @@
+
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<!-- Material Design Lite -->
+	<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+	<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+	<!-- Material Design icon font -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+	<title>CTA Bus Tracker</title>
+	<link rel="stylesheet" href="styles.css">
+	<script>
+		$(document).ready(function() {
+			var db = new Dexie("stopDB");
+			db.version(1).stores({
+				stops: '++id,route,routeName,direction,stop,stopName'
+			});
+			db.stops.count().then(function(count) {
+				var stops = [];
+				if (count == 0) {
+					$('#fixed-tab-1, #a-1').removeClass('is-active');
+					$('#fixed-tab-3, #a-3').removeClass('is-active');
+					$('#smallNav, .mdl-layout__obfuscator').removeClass('is-visible');
+					$('.mdl-layout__tab').removeClass('is-active');
+					$('#fixed-tab-2, #a-2').addClass('is-active');
+				} else {
+					trackBus(true);
+				}
+			});
+			var apiPassThruUrl = "https://polar-garden-75406.herokuapp.com/apiPassThru.php";
+			var apiEndpoint = "http://ctabustracker.com/bustime/api/v2/getroutes";
+			$.ajax({
+				url: apiPassThruUrl,
+				dataType: "json",
+				method: 'GET',
+				data: {
+					"apiEndpoint": apiEndpoint,
+					"key" : "FiLpUFr72VutfAaDwzDuJfqmR",
+					"format":"json"
+				}
+			}).done (function (data) {
+				for (let route of data["bustime-response"]["routes"]) {
+					$("#routeSelector").append("<option data-rtnm='" + route.rtnm + "' value='" + route.rt + "'>" + route.rt + " - " + route.rtnm + "</option>");
+				}
+				$("#routeSelector").prop("disabled", false);
+			});
+			$("#stopSelector").on("change", function() {
+				$("#addStop").prop("disabled", false);
+			});
+			$("#directionSelector").on("change", function() {
+				$("#addStop").prop("disabled", true);
+				$("#stopSelector").html('<option value="" disabled>-- Select a Stop --</option>');
+				$("#stopSelector").prop("disabled", true);
+				var route = $("#routeSelector").val();
+				var direction = $("#directionSelector").val();
+				var apiEndpoint = "http://ctabustracker.com/bustime/api/v2/getstops";
+				$.ajax({
+					url: apiPassThruUrl,
+					dataType: "json",
+					method: 'GET',
+					data: {
+						"apiEndpoint": apiEndpoint,
+						"key" : "FiLpUFr72VutfAaDwzDuJfqmR",
+						"format":"json",
+						"rt": route,
+						"dir": direction
+					}
+				}).done (function (data) {
+					for (let stop of data["bustime-response"]["stops"]) {
+						$("#stopSelector").append("<option data-stpnm='" + stop.stpnm + "' value='" + stop.stpid + "'>" + stop.stpid + ' - ' + stop.stpnm + "</option>");
+					}
+					$("#stopSelector").prop("disabled", false);
+				});
+			});
+			
+			
+			$("#routeSelector").on("change", function() {
+				$("#addStop").prop("disabled", true);
+				$("#directionSelector").html('<option value="" disabled>-- Select a Direction --</option>');
+				$("#directionSelector").prop("disabled", true);
+				$("#stopSelector").html('<option value="" disabled>-- Select a Stop --</option>');
+				$("#stopSelector").prop("disabled", true);
+				var route = $("#routeSelector").val();
+				var apiEndpoint = "http://ctabustracker.com/bustime/api/v2/getdirections";
+				$.ajax({
+					url: apiPassThruUrl,
+					dataType: "json",
+					method: 'GET',
+					data: {
+						"apiEndpoint": apiEndpoint,
+						"key" : "FiLpUFr72VutfAaDwzDuJfqmR",
+						"format":"json",
+						"rt": route
+					}
+				}).done (function (data) {
+					for (let direction of data["bustime-response"]["directions"]) {
+						$("#directionSelector").append("<option value='" + direction.dir + "'>" + direction.dir + "</option>");
+					}
+					$("#directionSelector").prop("disabled", false);
+				});
+			});
+			function trackBus(reloadStops) {
+				$("#showPreview").empty();
+				var stops = [];
+				var stopNames = [];
+				var directions = [];
+				var routes = [];
+				var routeNames = [];
+				db.stops.where("stop").startsWith("").each(function(stop) {
+					stops.push(stop.stop);
+					stopNames.push(stop.stopName);
+					directions.push(stop.direction);
+					routes.push(stop.route);
+					routeNames.push(stop.routeName)
+				}).then(function() {
+					if (stops.length == 0) {
+						$('#fixed-tab-1, #a-1').removeClass('is-active');
+						$('#fixed-tab-3, #a-3').removeClass('is-active');
+						$('#smallNav, .mdl-layout__obfuscator').removeClass('is-visible');
+						$('.mdl-layout__tab').removeClass('is-active');
+						$('#fixed-tab-2, #a-2').addClass('is-active');
+					} else {
+						if (reloadStops) {
+							$('#savedStops').empty();
+							$.each(stops, function(i, v) {
+			                	$('#savedStops').append(
+			                    	'<div id="stop' + v + '" class="stopCard mdl-card-mod">'
+			                    	+ '<div class="mdl-card__title">'
+			                    	+ '<h4 style="text-align:left;" class="mdl-card__title-text">'
+			                    	+ 'Route: ' + routeNames[i]
+			                    	+ '<br><br>Direction: ' + directions[i]
+			                    	+ '<br><br>Route ID: ' + routes[i]
+			                    	+ '<br><br>Stop: ' + stopNames[i]
+			                    	+ '<br><br>Stop ID: ' + stops[i]
+			                    	+ '</h4>'
+			                    	+ '</div>'
+			                    	+ '<div class="mdl-card__actions">'
+			                    	+ '<a href="javascript:removeStop(' + v + ')">Stop Tracking</a>'
+			                    	+ '</div>'
+			                		+ '</div>');
+							   $('#stop' + v).hide();
+			                   $('#stop' + v).slideToggle();
+							});
+						}
+						var apiEndpoint = "http://ctabustracker.com/bustime/api/v2/getpredictions";
+						stops = stops.join(",");
+						routes = routes.join(",");
+			            $.ajax({
+			                url: apiPassThruUrl,
+			                dataType: "json",
+			                method: 'GET',
+			                data: {"apiEndpoint": apiEndpoint,
+			                        "key" : "FiLpUFr72VutfAaDwzDuJfqmR",
+			                        "format":"json",
+			                        "stpid": stops,
+			                        "rt": routes
+			                }
+			              }).done (function (data) {
+			                $.each(data["bustime-response"]["prd"], function(i,v) {
+			                  if (v.prdctdn == "DUE" || v.prdctdn == "DLY") {
+			                    timeUntilArrivalSuffix = ''
+			                  } else {
+			                    timeUntilArrivalSuffix = ' minutes away'
+			                  }
+			                  newArrivalTime = v.prdtm.substr(9)
+			                  if (parseInt(newArrivalTime.substr(0, 2)) > 12) {
+			                    newArrivalTime = String(parseInt(newArrivalTime.substr(0, 2)) - 12) + newArrivalTime.substr(2)
+			                  }
+			                  if (newArrivalTime.substr(0, 1) == '0') {
+			                    newArrivalTime = newArrivalTime.substr(1)
+			                  }
+			                  if ($('#' + v.rt + 'Display').length == 0) {
+								$('#showPreview').append('<h1 class="busRouteTitle" style="clear: left; margin-left: 20px; margin-bottom: 0px;">Route ' + v.rt + '</h1><div class="busRouteDiv" id="' + v.rt + 'Display"></div>');
+							  }
+			                  $('#' +  v.rt + 'Display').append(
+			                      '<div id="card' + i + '" class="busCard mdl-card-mod">'
+			                      + '<div class="mdl-card__title">'
+			                      + '<h4 class="mdl-card__title-text">'
+			                      + 'Arriving at ' + newArrivalTime + ' (' + v.prdctdn + timeUntilArrivalSuffix + ')'
+			                      
+			                      + '<br><br>Direction: ' + v.rtdir
+			                      + '<br><br>Destination: ' + v.des
+			                      + '<br><br>Stop ID: ' + v.stpid
+			                      + '</h4>'
+			                      + '</div>'
+			                      + '</div>');
+							   $('#card' + i).hide();
+			                   $('#card' + i).slideToggle();
+			                })
+			  
+			              });
+					}
+				});
+			}
+			window.removeStop = function(stop) {
+				stop = String(stop);
+				$('#stop' + stop).slideToggle(function() {
+					$('#stop' + stop).remove();
+					db.stops.where("stop").equals(stop).delete().then(function(deleteCount) {
+						trackBus(false);
+					});
+				});
+			}
+			$("#addStop").on("click", function() {
+				db.stops.add({
+					route: $("#routeSelector").val(),
+					routeName: $("#routeSelector :selected").attr("data-rtnm"),
+					direction: $("#directionSelector").val(),
+					stop: $("#stopSelector").val(),
+					stopName: $("#stopSelector :selected").attr("data-stpnm")
+				});
+				$('#fixed-tab-2, #a-2').removeClass('is-active');
+				$('#fixed-tab-3, #a-3').removeClass('is-active');
+				$('#smallNav, .mdl-layout__obfuscator').removeClass('is-visible');
+				$('.mdl-layout__tab').removeClass('is-active');
+				$('#fixed-tab-1, #a-1').addClass('is-active');
+				$('#routeSelector').val("");
+				$('#directionSelector').val("");
+				$("#directionSelector").prop("disabled", true);
+				$('#stopSelector').val("");
+				$("#stopSelector").prop("disabled", true);
+				$("#addStop").prop("disabled", true);
+				trackBus(true);
+			});
+			$("#resetDB").on("click", function() {
+				if ($('.stopCard').length == 0) {
+					$('#fixed-tab-1, #a-1').removeClass('is-active');
+					$('#fixed-tab-3, #a-3').removeClass('is-active');
+					$('#smallNav, .mdl-layout__obfuscator').removeClass('is-visible');
+					$('.mdl-layout__tab').removeClass('is-active');
+					$('#fixed-tab-2, #a-2').addClass('is-active');
+				} else {
+					$('.stopCard').slideToggle(function() {
+						$('.stopCard').remove();
+						db.stops.where("stop").startsWith("").delete().then(function(deleteCount) {
+							trackBus(true);
+						});
+					});
+				}
+			});
+			$("#trackBus").on("click", function() {
+				if ($('.stopCard').length == 0) {
+					$('#fixed-tab-1, #a-1').removeClass('is-active');
+					$('#fixed-tab-3, #a-3').removeClass('is-active');
+					$('#smallNav, .mdl-layout__obfuscator').removeClass('is-visible');
+					$('.mdl-layout__tab').removeClass('is-active');
+					$('#fixed-tab-2, #a-2').addClass('is-active');
+				} else {
+					$('.busCard, .busRouteTitle').slideToggle();
+					setTimeout(function() {
+						trackBus(false);
+					}, 400);
+				}
+			});
+		});
+	</script>
+</head>
+
+<body>
+	<!-- Simple header with fixed tabs. -->
+	<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header
+                mdl-layout--fixed-tabs">
+		<header class="mdl-layout__header">
+			<span class="mdl-layout-title"><center style="margin-top: 20px; margin-bottom: 10px;">CTA Bus Tracker</center></span>
+			<div class="mdl-layout__tab-bar mdl-js-ripple-effect"> 
+				<a id="a-1" href="javascript:$('#fixed-tab-2, #a-2').removeClass('is-active');$('#fixed-tab-3, #a-3').removeClass('is-active');$('#smallNav, .mdl-layout__obfuscator').removeClass('is-visible');$('.mdl-layout__tab').removeClass('is-active');$('#fixed-tab-1, #a-1').addClass('is-active');" class="mdl-layout__tab a-1 is-active">Add Bus</a>
+				<a id="a-2" href="javascript:$('#fixed-tab-1, #a-1').removeClass('is-active');$('#fixed-tab-3, #a-3').removeClass('is-active');$('#smallNav, .mdl-layout__obfuscator').removeClass('is-visible');$('.mdl-layout__tab').removeClass('is-active');$('#fixed-tab-2, #a-2').addClass('is-active');" class="mdl-layout__tab a-2">Track Bus</a>
+				<a id="a-3" href="javascript:$('#fixed-tab-1, #a-1').removeClass('is-active');$('#fixed-tab-2, #a-2').removeClass('is-active');$('#smallNav, .mdl-layout__obfuscator').removeClass('is-visible');$('.mdl-layout__tab').removeClass('is-active');$('#fixed-tab-3, #a-3').addClass('is-active');" class="mdl-layout__tab a-3">Delete Stop</a>
+			</div>
+			
+			
+		</header>
+		
+		
+		<main class="mdl-layout__content">
+			<section class="mdl-layout__tab-panel" id="fixed-tab-1">
+				<div class="page-content">
+					<!-- Your content goes here -->
+					<center>
+						<select id="routeSelector" disabled>
+							<option value="" disabled>-- Select a Route --</option>
+						</select>
+						<select id="directionSelector" disabled>
+							<option value="" disabled>-- Select a Direction --</option>
+						</select>
+						<select id="stopSelector" disabled>
+							<option value="" disabled>-- Select a Stop --</option>
+						</select>
+						
+						<button disabled id="addStop" style="margin: 5px; width: calc(100% - 10px)" class="w3-button w3-black">Add New Stop</button>
+					</center>
+				</div>
+			</section>
+			
+			
+			<section class="mdl-layout__tab-panel is-active" id="fixed-tab-2">
+				<div class="page-content">
+					<!-- Your content goes here -->
+					<center>
+						<button id="trackBus" style="margin: 10px; width: calc(100% - 90px)" class="w3-button w3-black">Refresh</button>
+					</center>
+					<div id="showPreview"></div>
+				</div>
+			</section>
+			
+			
+			<section class="mdl-layout__tab-panel" id="fixed-tab-3">
+				<div class="page-content">
+					<!-- Your content goes here -->
+					<center>
+						<button id="resetDB" style="margin: 5px; width: calc(100% - 10px)" class="w3-button w3-black">Stop All</button>
+						<div id="savedStops" style="margin: 5px; width: calc(100% - 10px)"></div>
+					</center>
+				</div>
+			</section>
+		</main>
+	</div>
+</body>
+
+</html>

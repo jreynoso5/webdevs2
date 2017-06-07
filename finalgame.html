@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Canvas Text Example</title>
+  <style>
+    canvas {
+      border: #300 15px solid;
+      background-image: url("campus.jpg");
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="myCanvas" width="1600px" height="800px"></canvas>
+
+  <script>
+    var canvas = document.querySelector("#myCanvas");
+    var context = canvas.getContext("2d");
+    var y = 0;
+    var myImage = new Image();
+    myImage.src = "broke.png";
+    
+    
+    var money = new Image();
+    money.src = "money.png";
+    var debt = new Image();
+    debt.src = "debt.png";
+    
+    
+    var lives = 5;
+    var score = 0;
+    var level = 1;
+    
+    var moneyX = 1600;
+    var moneyY = 100;
+    
+    var debtX = 1600;
+    var debtY = 700;
+    var pause = false;
+    var nextLevel = 20;
+    var gameOver = false;
+
+    myImage.addEventListener("load", loadImage, false);
+
+    function loadImage(e) {
+      context.drawImage(myImage, 100, y);
+    }
+
+    money.addEventListener("load", loadmoney, false);
+
+    function loadmoney(e) {
+      context.drawImage(money, moneyX, moneyY);
+    }
+
+    debt.addEventListener("load", loaddebt, false);
+
+    function loaddebt(e) {
+      context.drawImage(debt, debtX, debtY);
+    }
+
+    context.font = "bold 32px Helvetica";
+    context.fillText("Lives left: " + lives, 500, 50);
+    context.fillText("Score: " + score, 900, 50);
+    context.fillText("Level: " + level, 1300, 50);
+
+    window.addEventListener("keydown", dealWithKeyboard, false);
+   
+   
+   
+   
+    function dealWithKeyboard(e) {
+      switch (e.keyCode) {
+        case 38:
+          if (y != 0) {
+            y -= 10;
+          }
+          break;
+        case 40:
+          if (y != 640) {
+            y += 10;
+          }
+          break;
+        case 32:
+          pause = !pause;
+          console.log(pause);
+          if (!pause){
+            animate();
+          }
+          break;
+      }
+      e.preventDefault();
+    }
+
+    function animate() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(myImage, 100, y);
+
+        context.font = "bold 32px Helvetica";
+        context.fillText("Lives left: " + lives, 500, 50);
+        
+        context.fillText("Score: " + score, 900, 50);
+        context.fillText("Level: " + level, 1300, 50);
+        
+        context.drawImage(money, moneyX, moneyY);
+        if (moneyX <= 100) {
+          moneyX = 1600;
+          moneyY = Math.floor(Math.random() * 600) + 100;
+        }
+        else {
+          moneyX -= (3 * level);
+        }
+        
+        context.drawImage(debt, debtX, debtY);
+        if (debtX <= 100) {
+          debtX = 1600;
+          debtY = Math.floor(Math.random() * 600) + 100;
+        }
+        else {
+          debtX -= (3 * level);
+        }
+        
+        if (moneyX >= 100 && moneyX <= myImage.width + 100 && moneyY >= y && moneyY <= myImage.height + y){
+            score += 5;
+            moneyX = 1600;
+            moneyY = Math.floor(Math.random() * 600) + 100;
+        }
+        
+        if (debtX >= 100 && debtX <= myImage.width + 100 && debtY >= y && debtY <= myImage.height + y){
+            lives -= 1;
+            debtX = 1600;
+            debtY = Math.floor(Math.random() * 600) + 100;
+        }
+        
+        if (lives == 0){
+          gameOver = true;
+        }
+        
+        if (score == nextLevel){
+          level += 1;
+          nextLevel += 20;
+        }
+        
+        if (!pause && !gameOver){
+          requestAnimationFrame(animate);
+        }
+      }
+      
+      if (gameOver){
+        context.font = "bold 64px Helvetica";
+        context.fillText("GameOver");
+      }
+      
+
+    animate();
+  </script>
+
+</body>
+
+</html>
